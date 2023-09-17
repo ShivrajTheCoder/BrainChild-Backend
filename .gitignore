@@ -1,0 +1,33 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore log files and other generated files
+logs/
+*.log
+npm-debug.log*
+
+# Ignore environment-specific config files
+config/*.env
+
+# Ignore .env files (usually used for sensitive data)
+.env
+
+# Ignore build and bundled files
+build/
+dist/
+out/
+*.bundle.js
+*.bundle.css
+
+# Ignore coverage reports
+coverage/
+
+# Ignore OS and editor-specific files
+.DS_Store
+.vscode/
+Thumbs.db
+.idea/
+
+# Ignore npm's package-lock or yarn's yarn.lock files
+package-lock.json
+yarn.lock
