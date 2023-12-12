@@ -19,5 +19,11 @@ const courseModel=new Schema({
     author:{
         type:mongoose.Types.ObjectId,
         ref:"Teacher",
+    },
+    enrolled:{
+        type:Number,
+        default:0
     }
 })
+
+module.exports=mongoose.model("Course",courseModel);

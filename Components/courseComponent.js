@@ -1,0 +1,120 @@
+const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
+const Course = require("../Models/CourseModel");
+const { CustomError, NotFoundError } = require("../Utilities/CustomErrors");
+const { validationResult } = require("express-validator");
+
+const exp = module.exports;
+
+exp.CreateCourse = RouterAsncErrorHandler(async (req, res, next) => {
+  try {
+    const { name, description, videos, author, enrolled } = req.body;
+
+    // Validate data
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new CustomError(400, "Validation Error", errors.array());
+    }
+
+    // Create a new course
+    const newCourse = new Course({
+      name,
+      description,
+      videos,
+      author,
+      enrolled,
+    });
+
+    const course = await newCourse.save();
+
+    return res.status(201).json({
+      message: "Course Created",
+      course,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+exp.GetAllCourses = RouterAsncErrorHandler(async (req, res, next) => {
+  try {
+    const courses = await Course.find();
+    if (courses.length > 0) {
+      return res.status(200).json({
+        message: "Courses found",
+        courses,
+      });
+    } else {
+      throw new NotFoundError();
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+exp.GetCourseById = RouterAsncErrorHandler(async (req, res, next) => {
+  const courseId = req.params.id;
+  try {
+    const course = await Course.findById(courseId).populate("videos").populate("author", "name"); // Adjust properties based on your Video and Teacher models
+    if (!course) {
+      throw new NotFoundError("Course Not Found");
+    }
+    return res.status(200).json({
+      message: "Course Found",
+      course,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+exp.UpdateCourse = RouterAsncErrorHandler(async (req, res, next) => {
+  const courseId = req.params.id;
+  try {
+    const { name, description, videos, author, enrolled } = req.body;
+
+    // Validate data
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new CustomError(400, "Validation Error", errors.array());
+    }
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      courseId,
+      {
+        name,
+        description,
+        videos,
+        author,
+        enrolled,
+      },
+      { new: true }
+    );
+
+    if (!updatedCourse) {
+      throw new NotFoundError("Course Not Found");
+    }
+
+    return res.status(200).json({
+      message: "Course Updated",
+      course: updatedCourse,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+exp.DeleteCourse = RouterAsncErrorHandler(async (req, res, next) => {
+  const courseId = req.params.id;
+  try {
+    const deletedCourse = await Course.findByIdAndDelete(courseId);
+    if (!deletedCourse) {
+      throw new NotFoundError("Course Not Found");
+    }
+    return res.status(200).json({
+      message: "Course Deleted",
+      course: deletedCourse,
+    });
+  } catch (error) {
+    next(error);
+  }
+});

@@ -1,6 +1,6 @@
 const User = require("../Models/User.js");
 const bcrypt = require("bcrypt");
-const jwt=require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const { NotFoundError, AuthenticationError, DuplicateDataError } = require("../Utilities/CustomErrors.js");
 const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware.js");
 
@@ -12,7 +12,7 @@ exp.Login = RouterAsncErrorHandler(async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw new NotFoundError( "User not found!")
+      throw new NotFoundError("User not found!")
     }
 
     // Compare the hashed input password with the hashed password stored in the database
@@ -50,7 +50,7 @@ exp.Signup = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-    throw new DuplicateDataError("User Already Exists");
+      throw new DuplicateDataError("User Already Exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
