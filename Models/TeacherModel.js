@@ -2,15 +2,22 @@ const mongoose=require("mongoose");
 const Schema=mongoose.Schema;
 const Video=require("./VideoModel");
 const teacherSchema=new Schema({
-    name:{
+    firstname:{
         type:String,
         required:true,
-        unique:true,
+    },
+    lastname:{
+        type:String,
+        required:true,
     },
     email:{
         type:String,
         required:true,
         unique:true,
+    },
+    password:{
+        type:String,
+        required:true,
     },
     videos:{
         type:mongoose.Types.ObjectId,

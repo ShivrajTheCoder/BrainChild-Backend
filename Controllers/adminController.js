@@ -1,7 +1,9 @@
 const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const CourseModel = require("../Models/CourseModel");
 const Course = require("../Models/CourseModel");
+const Teacher = require("../Models/TeacherModel");
 const User = require("../Models/User");
+const bcrypt = require("bcrypt");
 const { NotFoundError } = require("../Utilities/CustomErrors");
 
 const exp=module.exports;
@@ -40,3 +42,36 @@ exp.GetDashboardData=RouterAsncErrorHandler(async(req,res,next)=>{
         next(error);
     }
 })
+
+exp.AddTeacher = RouterAsncErrorHandler(async (req, res, next) => {
+    const { firstname, lastname, email, password } = req.body;
+  
+    try {
+      // Check if the email is already registered
+      const existingTeacher = await Teacher.findOne({ email });
+      if (existingTeacher) {
+        return res.status(400).json({ error: "Email is already registered" });
+      }
+  
+      // Hash the password using bcrypt
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // Create a new teacher
+      const newTeacher = new Teacher({
+        firstname,
+        lastname,
+        email,
+        password: hashedPassword,
+      });
+  
+      // Save the teacher to the database
+      const savedTeacher = await newTeacher.save();
+  
+      res.status(201).json({
+        message: "Teacher added successfully",
+        teacher: savedTeacher,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });

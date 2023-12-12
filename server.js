@@ -20,6 +20,8 @@ async function main() {
 // import routes
 const authRoutes=require("./Routes/authRoutes");
 const teacherRoutes=require("./Routes/teacherRoutes");
+const courseRoutes=require("./Routes/courseRoutes");
+const adminRoutes=require("./Routes/adminRoutes");
 const { ErrorHandlerMiddleware } = require("./Middlewares/ErrorHandlerMiddleware");
 // create application/json parser
 var jsonParser = bodyParser.json()
@@ -33,6 +35,8 @@ app.use(cors());
 // Routes
 app.use("/auth",jsonParser,authRoutes);
 app.use("/teacher",jsonParser,teacherRoutes)
+app.use("/courses",jsonParser,courseRoutes)
+app.use("/admin",jsonParser,adminRoutes)
 app.use(ErrorHandlerMiddleware)
 app.listen(PORT,()=>{
     console.log("listening on port "+PORT);
