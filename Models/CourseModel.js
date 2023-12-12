@@ -23,6 +23,10 @@ const courseModel=new Schema({
     enrolled:{
         type:Number,
         default:0
+    },
+    approved:{
+        type:Boolean,
+        default:false,
     }
 })
 
