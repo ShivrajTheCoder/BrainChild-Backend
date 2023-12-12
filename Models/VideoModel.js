@@ -24,6 +24,15 @@ const video=new Schema({
     approved:{
         type:Boolean,
         default:false,
+    },
+    course:{
+        type:mongoose.Types.ObjectId,
+        required:true,
+        ref:"Course",
+    },
+    likes:{
+        type:Number,
+        default:0,
     }
 })
 

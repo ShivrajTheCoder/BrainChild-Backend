@@ -2,7 +2,7 @@ const express=require("express");
 const router=express.Router();
 const {check,body, validationResult}=require("express-validator");
 const routeCredentialValidator=require("../Middlewares/CredentialsValidator");
-const { UploadVideo, DeleteVideo, UpdateVideo } = require("../Components/teacherComponents");
+const { UploadVideo, DeleteVideo, UpdateVideo } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
 
 const atLeastOne=(value,{req})=>{

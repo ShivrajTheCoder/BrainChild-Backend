@@ -8,7 +8,7 @@ const {
   GetCourseById,
   UpdateCourse,
   DeleteCourse,
-} = require("../Components/courseComponents");
+} = require("../Controllers/courseController");
 const { CustomError } = require("../Utilities/CustomErrors");
 
 const atLeastOne = (value, { req }) => {

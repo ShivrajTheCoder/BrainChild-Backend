@@ -40,14 +40,14 @@ exp.DeleteVideo = RouterAsncErrorHandler(async (req, res, next) => {
 
 
 exp.UpdateVideo=RouterAsncErrorHandler(async(req,res,next)=>{
-    const id=req.query;
+    const {id}=req.params;
     try{
         const updated=await Video.findByIdAndUpdate(id,req.body);
         return res.status(200).json({
             message:"Video updated",
         })
     }
-    catch(error){
+    catch(error){ 
         next(error);
     }
 })
