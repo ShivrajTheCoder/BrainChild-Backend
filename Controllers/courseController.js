@@ -9,8 +9,6 @@ const exp = module.exports;
 exp.CreateCourse = RouterAsncErrorHandler(async (req, res, next) => {
   try {
     const { name, description, author } = req.body;
-    console.log(req.body);
-    // Validate data
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new CustomError(400, "Validation Error", errors.array());

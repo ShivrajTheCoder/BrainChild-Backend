@@ -45,7 +45,7 @@ exp.GetDashboardData=RouterAsncErrorHandler(async(req,res,next)=>{
 
 exp.AddTeacher = RouterAsncErrorHandler(async (req, res, next) => {
     const { firstname, lastname, email, password } = req.body;
-  
+
     try {
       // Check if the email is already registered
       const existingTeacher = await Teacher.findOne({ email });
