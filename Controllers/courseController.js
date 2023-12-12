@@ -1,5 +1,6 @@
 const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const Course = require("../Models/CourseModel");
+const TeacherModel = require("../Models/TeacherModel");
 const { CustomError, NotFoundError } = require("../Utilities/CustomErrors");
 const { validationResult } = require("express-validator");
 
@@ -7,21 +8,22 @@ const exp = module.exports;
 
 exp.CreateCourse = RouterAsncErrorHandler(async (req, res, next) => {
   try {
-    const { name, description, videos, author, enrolled } = req.body;
-
+    const { name, description, author } = req.body;
+    console.log(req.body);
     // Validate data
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new CustomError(400, "Validation Error", errors.array());
     }
-
+    const teacher=await TeacherModel.findById(author);
+    if(!teacher){
+      throw new NotFoundError("Teacher Not found!");
+    }
     // Create a new course
     const newCourse = new Course({
       name,
       description,
-      videos,
       author,
-      enrolled,
     });
 
     const course = await newCourse.save();

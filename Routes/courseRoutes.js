@@ -19,13 +19,12 @@ const atLeastOne = (value, { req }) => {
   throw new CustomError(400, "Invalid parameters", "Invalid");
 };
 
-router.route("/createcourse").post([
-  check("name").exists(),
-  check("description").exists().isLength({ min: 10 }),
-  check("videos").exists().isArray(),
-  check("author").exists().isMongoId(),
-  check("enrolled").optional().isNumeric(),
-], CreateCourse);
+router.route("/createcourse").post((req,res,next)=>{
+  console.log(req.body);
+  return res.status(200).json({
+    message:"Good"
+  })
+});
 
 router.route("/getallcourses").get(GetAllCourses);
 

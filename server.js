@@ -37,6 +37,9 @@ app.use("/auth",jsonParser,authRoutes);
 app.use("/teacher",jsonParser,teacherRoutes)
 app.use("/courses",jsonParser,courseRoutes)
 app.use("/admin",jsonParser,adminRoutes)
+
+
+
 app.use(ErrorHandlerMiddleware)
 app.listen(PORT,()=>{
     console.log("listening on port "+PORT);

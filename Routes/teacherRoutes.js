@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { check, body, validationResult } = require("express-validator");
 const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
-const { UploadVideo, DeleteVideo, UpdateVideo, CreateNewCourse } = require("../Controllers/teacherController");
+const { UploadVideo, DeleteVideo, UpdateVideo } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
+const { CreateCourse } = require("../Controllers/courseController");
 
 const atLeastOne = (value, { req }) => {
     if (req.title || req.title) {
@@ -25,11 +26,6 @@ router.route("/deletevideo/:videoId")
         check("id").exists().isMongoId()
     ], DeleteVideo)
 
-router.post("/createcourse", [
-    body("name").exists(),
-    body("author").exists().isMongoId(),
-    body("description").exists().isLength({ min: 10 }),
-], CreateNewCourse)
 
 router.route("/updatevideo/:id")
     .put([

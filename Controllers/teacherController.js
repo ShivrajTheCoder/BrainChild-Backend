@@ -82,27 +82,3 @@ exp.GetMyCourses = RouterAsncErrorHandler(async (req, res, next) => {
         next(error);
     }
 })
-
-exp.CreateNewCourse = RouterAsncErrorHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    const { name, author, description } = req.body;
-    try {
-        const teacher = await TeacherModel.findById(author);
-        if (!teacher) {
-            throw new NotFoundError("Teacher not found!");
-        }
-        const newCourse = new CourseModel({
-            name, author, description
-        });
-        const course = await newCourse.save();
-        return res.status(201).json({
-            course,
-            message: "Course Created"
-        })
-    } catch (error) {
-        next(error);
-    }
-})
