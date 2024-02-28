@@ -1,4 +1,4 @@
-const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
+const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const CourseModel = require("../Models/CourseModel");
 const Course = require("../Models/CourseModel");
 const Teacher = require("../Models/TeacherModel");
@@ -8,7 +8,7 @@ const { NotFoundError } = require("../Utilities/CustomErrors");
 
 const exp=module.exports;
 
-exp.ApproveCourse= RouterAsncErrorHandler(async(req,res,next)=>{
+exp.ApproveCourse= RouterAsyncErrorHandler(async(req,res,next)=>{
     const {courseId,approval}=req.body;
     try{
         const course =await Course.findByIdAndUpdate(courseId, { approved: approval },{new:true});
@@ -26,7 +26,7 @@ exp.ApproveCourse= RouterAsncErrorHandler(async(req,res,next)=>{
     }
 })
 
-exp.GetDashboardData=RouterAsncErrorHandler(async(req,res,next)=>{
+exp.GetDashboardData=RouterAsyncErrorHandler(async(req,res,next)=>{
     try {
         const users= await User.find({});
         const activeCourses=await CourseModel.find({approved:true});
@@ -43,7 +43,7 @@ exp.GetDashboardData=RouterAsncErrorHandler(async(req,res,next)=>{
     }
 })
 
-exp.AddTeacher = RouterAsncErrorHandler(async (req, res, next) => {
+exp.AddTeacher = RouterAsyncErrorHandler(async (req, res, next) => {
     const { firstname, lastname, email, password } = req.body;
 
     try {

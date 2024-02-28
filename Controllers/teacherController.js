@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
+const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const CourseModel = require("../Models/CourseModel");
 const Course = require("../Models/CourseModel");
 const TeacherModel = require("../Models/TeacherModel");
@@ -8,12 +8,12 @@ const Video = require("../Models/VideoModel");
 const { NotFoundError } = require("../Utilities/CustomErrors");
 const exp = module.exports;
 
-exp.UploadVideo = RouterAsncErrorHandler(async (req, res, next) => {
+exp.UploadVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { title, description, author } = req.body;
+    const { title, description, author,course } = req.body;
     try {
         const teacher = await Teacher.findById(author);
         if (!teacher) {
@@ -21,18 +21,19 @@ exp.UploadVideo = RouterAsncErrorHandler(async (req, res, next) => {
         }
         const newVid = new Video({
             url: "xyz",
-            title, description, author
+            title, description, author,course
         });
         await newVid.save();
         return res.status(201).json({
             message: "Video added",
+            video:newVid
         });
     } catch (e) {
         next(e);
     }
 });
 
-exp.DeleteVideo = RouterAsncErrorHandler(async (req, res, next) => {
+exp.DeleteVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const { videoId } = req.query;
     await Video.findByIdAndDelete(videoId)
         .then(() => {
@@ -46,7 +47,7 @@ exp.DeleteVideo = RouterAsncErrorHandler(async (req, res, next) => {
 })
 
 
-exp.UpdateVideo = RouterAsncErrorHandler(async (req, res, next) => {
+exp.UpdateVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const { id } = req.params;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -64,7 +65,7 @@ exp.UpdateVideo = RouterAsncErrorHandler(async (req, res, next) => {
     }
 })
 
-exp.GetMyCourses = RouterAsncErrorHandler(async (req, res, next) => {
+exp.GetMyCourses = RouterAsyncErrorHandler(async (req, res, next) => {
     const { authorId } = req.params;
     try {
         const courses = await Course.find({ author: authorId });

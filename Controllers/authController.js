@@ -2,11 +2,11 @@ const User = require("../Models/User.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { NotFoundError, AuthenticationError, DuplicateDataError } = require("../Utilities/CustomErrors.js");
-const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware.js");
+const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware.js");
 
 const exp = module.exports;
 
-exp.Login = RouterAsncErrorHandler(async (req, res, next) => {
+exp.Login = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });

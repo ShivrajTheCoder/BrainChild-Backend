@@ -1,4 +1,4 @@
-const { RouterAsncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
+const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const Course = require("../Models/CourseModel");
 const TeacherModel = require("../Models/TeacherModel");
 const { CustomError, NotFoundError } = require("../Utilities/CustomErrors");
@@ -6,7 +6,7 @@ const { validationResult } = require("express-validator");
 
 const exp = module.exports;
 
-exp.CreateCourse = RouterAsncErrorHandler(async (req, res, next) => {
+exp.CreateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
     const { name, description, author } = req.body;
     const errors = validationResult(req);
@@ -35,7 +35,7 @@ exp.CreateCourse = RouterAsncErrorHandler(async (req, res, next) => {
   }
 });
 
-exp.GetAllCourses = RouterAsncErrorHandler(async (req, res, next) => {
+exp.GetAllCourses = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
     const courses = await Course.find();
     if (courses.length > 0) {
@@ -51,7 +51,7 @@ exp.GetAllCourses = RouterAsncErrorHandler(async (req, res, next) => {
   }
 });
 
-exp.GetCourseById = RouterAsncErrorHandler(async (req, res, next) => {
+exp.GetCourseById = RouterAsyncErrorHandler(async (req, res, next) => {
   const courseId = req.params.id;
   try {
     const course = await Course.findById(courseId).populate("videos").populate("author", "name"); // Adjust properties based on your Video and Teacher models
@@ -67,7 +67,7 @@ exp.GetCourseById = RouterAsncErrorHandler(async (req, res, next) => {
   }
 });
 
-exp.UpdateCourse = RouterAsncErrorHandler(async (req, res, next) => {
+exp.UpdateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
   const courseId = req.params.id;
   try {
     const { name, description, videos, author, enrolled } = req.body;
@@ -103,7 +103,7 @@ exp.UpdateCourse = RouterAsncErrorHandler(async (req, res, next) => {
   }
 });
 
-exp.DeleteCourse = RouterAsncErrorHandler(async (req, res, next) => {
+exp.DeleteCourse = RouterAsyncErrorHandler(async (req, res, next) => {
   const courseId = req.params.id;
   try {
     const deletedCourse = await Course.findByIdAndDelete(courseId);

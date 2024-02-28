@@ -1,4 +1,4 @@
-exports.RouterAsncErrorHandler = (middleware) => (req, res, next) => Promise.resolve(middleware(req, res, next)).catch(next)
+exports.RouterAsyncErrorHandler = (middleware) => (req, res, next) => Promise.resolve(middleware(req, res, next)).catch(next)
 
 
 exports.ErrorHandlerMiddleware = (error, req, res, next) => {

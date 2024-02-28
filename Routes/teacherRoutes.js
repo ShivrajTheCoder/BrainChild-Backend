@@ -19,6 +19,7 @@ router.route("/uploadvideo")
         check("title").exists(),
         check("description").exists().isLength({ min: 10 }),
         check("author").exists().isMongoId(),
+        check("course").exists().isMongoId(),
     ], UploadVideo)
 
 router.route("/deletevideo/:videoId")
