@@ -8,17 +8,18 @@ const exp = module.exports;
 exp.sendParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
     const { parentEmail, childEmail } = req.body;
     try {
-        const child = await User.findOne(childEmail);
-        if (!child) {
-            throw new NotFoundError("No such user found!");
+        const child = await User.findOne({ email: childEmail });
+        const parent = await ParentModel.findOne({ email: parentEmail });
+        if (!child || !parent) {
+            throw new NotFoundError("No such user or parent found!");
         }
         const newReq = new RequestModel({
-            parentEmail, childEmail
+            sender: parentEmail, receiver: childEmail
         })
-        newReq = await newReq.save();
+        const saved = await newReq.save();
         return res.status(201).json({
             message: "Request sent!",
-            request: newReq
+            request: saved
         })
     }
     catch (error) {
@@ -27,36 +28,33 @@ exp.sendParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
 })
 
 exp.getAllChildCourses = RouterAsyncErrorHandler(async (req, res, next) => {
-    const { childId, parentId } = req.body;
+    const { parentId } = req.params;
     try {
-        const child=await User.findById(childId)
-                                        .populate("courses")
-                                        .exec((error,user)=>{
-                                            if(error){
-                                                next(error);
-                                            }
-                                            return user;
-                                        })
-        const parent=await ParentModel.findById(parentId);
-        if(!child || !parent){
-            throw new NotFoundError("Child or Parent Not found!");
+        const parent = await ParentModel.findById(parentId);
+        if (!parent) {
+            throw new NotFoundError("Parent not found!");
         }
-        if(parent.child !== child._id){
-            throw new CustomError(422,"Parent and child not match");
+        const childId = parent.child;
+        if (!childId) {
+            throw new NotFoundError("No child of parent");
         }
-        const {courses}=child;
-        if(courses.length<1){
-            throw new NotFoundError("No courses found!");
+        const child = await User.findById(childId).populate("courses")
+        if (!child) {
+            throw new NotFoundError("Child Not found!");
+        }
+        const { courses } = child;
+        if (!courses || courses.length === 0) {
+            throw new NotFoundError("No courses found for the child!");
         }
         return res.status(200).json({
-            message:"Courses Found!",
+            message: "Courses Found!",
             courses
-        })
+        });
+    } catch (error) {
+        next(error); // Pass the caught error to the error handling middleware
     }
-    catch (error) {
-        next();
-    }
-})
+});
+
 
 exp.addVideoFeedback = RouterAsyncErrorHandler(async (req, res, next) => {
     try {
