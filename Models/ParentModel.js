@@ -15,6 +15,10 @@ const parentSchema=new Schema({
         type:String,
         required:true,
         minLenght:5
+    },
+    child:{
+        type:mongoose.Types.ObjectId,
+        ref:"User"
     }
 })
 
