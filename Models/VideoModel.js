@@ -1,39 +1,45 @@
-const mongoose=require("mongoose");
-const Schema=mongoose.Schema;
-const Teacher=require("./TeacherModel");
-const video=new Schema({
-    url:{
-        type:String,
-        required:true,
-        unique:true,
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const Teacher = require("./TeacherModel");
+const video = new Schema({
+    videourl: {
+        type: String,
+        required: true,
+        unique: true,
     },
-    title:{
-        type:String,
-        required:true,
+    thumbnail: {
+        type: String,
+        required: true,
+        unique: true,
     },
-    description:{
-        type:String,
-        required:true,
-        minLenght:10,
+    title: {
+        type: String,
+        required: true,
+        unique: true,
     },
-    author:{
-        type:mongoose.Types.ObjectId,
-        required:true,
-        ref:"Teacher"
+    description: {
+        type: String,
+        required: true,
+        minLenght: 10,
     },
-    approved:{
-        type:Boolean,
-        default:false,
+    author: {
+        type: mongoose.Types.ObjectId,
+        required: true,
+        ref: "Teacher"
     },
-    course:{
-        type:mongoose.Types.ObjectId,
-        required:true,
-        ref:"Course",
+    approved: {
+        type: Boolean,
+        default: false,
     },
-    likes:{
-        type:Number,
-        default:0,
+    course: {
+        type: mongoose.Types.ObjectId,
+        required: true,
+        ref: "Course",
+    },
+    likes: {
+        type: Number,
+        default: 0,
     }
 })
 
-module.exports=mongoose.model("Video",video)
+module.exports = mongoose.model("Video", video)

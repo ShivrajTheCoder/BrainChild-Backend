@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const path = require('path');
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
@@ -18,6 +19,7 @@ async function main() {
     });
   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
+const baseUploadsPath = path.join(__dirname, 'uploads');
 // import routes
 const teacherRoutes = require("./Routes/teacherRoutes");
 const courseRoutes = require("./Routes/courseRoutes");
@@ -34,7 +36,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(cors());
 
 // Routes
-
+app.use('/media', express.static(baseUploadsPath));
 app.use("/teacher", jsonParser, teacherRoutes)
 app.use("/courses", jsonParser, courseRoutes)
 app.use("/admin", jsonParser, adminRoutes)

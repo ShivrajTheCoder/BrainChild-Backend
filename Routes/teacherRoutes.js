@@ -5,7 +5,19 @@ const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
 const { UploadVideo, DeleteVideo, UpdateVideo } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
 const { CreateCourse } = require("../Controllers/courseController");
-
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads') // Uploads folder where files will be stored
+    },
+    filename: function (req, file, cb) {
+        // Use original file name with a timestamp to avoid overwriting files with the same name
+        cb(null, Date.now() + '-' + file.originalname)
+    }
+});
+// const upload = multer({ dest: 'uploads/' })
+const upload = multer({ storage: storage })
+const multipleUpload = upload.fields([{ name: "thumbnail", maxCount: 1 },{name:"video",maxCount:1}])
 const atLeastOne = (value, { req }) => {
     if (req.title || req.title) {
         return true;
@@ -15,12 +27,7 @@ const atLeastOne = (value, { req }) => {
 }
 
 router.route("/uploadvideo")
-    .post([
-        check("title").exists(),
-        check("description").exists().isLength({ min: 10 }),
-        check("author").exists().isMongoId(),
-        check("course").exists().isMongoId(),
-    ], UploadVideo)
+    .post(multipleUpload, UploadVideo)
 
 router.route("/deletevideo/:videoId")
     .delete([

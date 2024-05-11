@@ -1,34 +1,59 @@
 const { validationResult } = require("express-validator");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
-const CourseModel = require("../Models/CourseModel");
 const Course = require("../Models/CourseModel");
-const TeacherModel = require("../Models/TeacherModel");
 const Teacher = require("../Models/TeacherModel");
 const Video = require("../Models/VideoModel");
-const { NotFoundError } = require("../Utilities/CustomErrors");
+const fs = require("fs");
+const { NotFoundError, CustomError } = require("../Utilities/CustomErrors");
 const exp = module.exports;
 
 exp.UploadVideo = RouterAsyncErrorHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+    const { title, description, author, course } = req.body;
+    if (!title || !description || !author || !course) {
+        throw new CustomError(422, "All Fields are mandatory");
     }
-    const { title, description, author,course } = req.body;
+    if (!req.files) {
+        return res.status(400).json({ error: "All fields are required" });
+    }
+    // console.log(req.files);
+    const { thumbnail, video } = req.files;
+    if (!thumbnail || !video) {
+        return res.status(400).json({ error: "All fields are required" });
+    }
+    const thumbnailpath = "http://localhost:8080/media/" + thumbnail[0].filename;
+    const videopath = "http://localhost:8080/media/" + video[0].filename;
+    console.log(thumbnailpath, videopath);
+
     try {
         const teacher = await Teacher.findById(author);
-        if (!teacher) {
-            throw new NotFoundError("Teacher Not Found");
+        const coursef = await Course.findById(course);
+        if (!teacher || !coursef) {
+            throw new NotFoundError("Teacher or course not Found");
         }
         const newVid = new Video({
-            url: "xyz",
-            title, description, author,course
+            title, description, author, course,
+            videourl: videopath, thumbnail: thumbnailpath
         });
-        await newVid.save();
+        // await newVid.save();
         return res.status(201).json({
             message: "Video added",
-            video:newVid
+            video: newVid
         });
     } catch (e) {
+        if (thumbnail && thumbnail[0] && thumbnail[0].path) {
+            fs.unlink(thumbnail[0].path, (err) => {
+                if (err) {
+                    console.error("Error deleting thumbnail:", err);
+                }
+            });
+        }
+        if (video && video[0] && video[0].path) {
+            fs.unlink(video[0].path, (err) => {
+                if (err) {
+                    console.error("Error deleting video:", err);
+                }
+            });
+        }
         next(e);
     }
 });
