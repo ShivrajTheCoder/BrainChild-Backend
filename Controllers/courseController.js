@@ -9,12 +9,29 @@ const exp = module.exports;
 exp.CreateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
     const { name, description, author } = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw new CustomError(400, "Validation Error", errors.array());
+    if (!name || !description || !author) {
+      return res.status(422).json({
+        message: "All fileds are mandatory"
+      })
     }
-    const teacher=await TeacherModel.findById(author);
-    if(!teacher){
+    if (!req.files) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+    // console.log(req.files);
+    const { thumbnail } = req.files;
+    if (!thumbnail) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+    const thumbnailpath = "http://localhost:8080/media/" + thumbnail[0].filename;
+    const coursef=await Course.find({name})
+    console.log(coursef);
+    if(coursef.length>0){
+      return res.status(400).json({
+        message:"Course already exists"
+      })
+    }
+    const teacher = await TeacherModel.findById(author);
+    if (!teacher) {
       throw new NotFoundError("Teacher Not found!");
     }
     // Create a new course
@@ -22,8 +39,9 @@ exp.CreateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
       name,
       description,
       author,
+      thumbnail:thumbnailpath
     });
-
+    // console.log(newCourse)
     const course = await newCourse.save();
 
     return res.status(201).json({

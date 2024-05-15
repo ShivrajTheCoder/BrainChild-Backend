@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { check, validationResult, body } = require("express-validator");
-const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
 const {
   CreateCourse,
   GetAllCourses,
@@ -10,7 +9,18 @@ const {
   DeleteCourse,
 } = require("../Controllers/courseController");
 const { CustomError } = require("../Utilities/CustomErrors");
-
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads') // Uploads folder where files will be stored
+    },
+    filename: function (req, file, cb) {
+        // Use original file name with a timestamp to avoid overwriting files with the same name
+        cb(null, Date.now() + '-' + file.originalname)
+    }
+});
+const upload = multer({ storage: storage })
+const multipleUpload = upload.fields([{ name: "thumbnail", maxCount: 1 }])
 const atLeastOne = (value, { req }) => {
   if (req.name || req.description || req.videos || req.author || req.enrolled) {
     return true;
@@ -19,11 +29,12 @@ const atLeastOne = (value, { req }) => {
   throw new CustomError(400, "Invalid parameters", "Invalid");
 };
 
-router.route("/createcourse").post([
-  check("name").exists(),
-  check("description").exists().isLength({ min: 10 }),
-  check("author").exists().isMongoId(),
-], CreateCourse);
+// router.route("/createcourse").post([
+//   check("name").exists(),
+//   check("description").exists().isLength({ min: 10 }),
+//   check("author").exists().isMongoId(),
+// ], CreateCourse);
+router.route("/createcourse").post(multipleUpload, CreateCourse);
 
 router.route("/getallcourses").get(GetAllCourses);
 

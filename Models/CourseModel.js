@@ -6,6 +6,7 @@ const courseModel=new Schema({
     name:{
         type:String,
         required:true,
+        unique:true
     },
     description:{
         type:String,
@@ -27,6 +28,11 @@ const courseModel=new Schema({
     approved:{
         type:Boolean,
         default:false,
+    },
+    thumbnail:{
+        type:String,
+        required:true,
+        unique:true
     }
 })
 

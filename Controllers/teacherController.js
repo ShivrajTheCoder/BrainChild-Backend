@@ -22,7 +22,7 @@ exp.UploadVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     }
     const thumbnailpath = "http://localhost:8080/media/" + thumbnail[0].filename;
     const videopath = "http://localhost:8080/media/" + video[0].filename;
-    console.log(thumbnailpath, videopath);
+    // console.log(thumbnailpath, videopath);
 
     try {
         const teacher = await Teacher.findById(author);
@@ -57,6 +57,7 @@ exp.UploadVideo = RouterAsyncErrorHandler(async (req, res, next) => {
         next(e);
     }
 });
+
 
 exp.DeleteVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const { videoId } = req.query;

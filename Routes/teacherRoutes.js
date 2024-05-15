@@ -4,7 +4,6 @@ const { check, body, validationResult } = require("express-validator");
 const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
 const { UploadVideo, DeleteVideo, UpdateVideo } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
-const { CreateCourse } = require("../Controllers/courseController");
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
