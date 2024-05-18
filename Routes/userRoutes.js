@@ -1,10 +1,10 @@
 const express=require("express");
 const router=express.Router();
-const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest } = require("../Controllers/userController");
+const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment } = require("../Controllers/userController");
 const {LoginUser,SignupUser} =require("../Controllers/authController");
 const User = require("../Models/User");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
-
+const { check, body, validationResult } = require("express-validator");
 
 router.route("/login")
     .post(RouterAsyncErrorHandler(async(req,res,next)=>{
@@ -29,5 +29,12 @@ router.route("/getallrequests/:childId")
 
 router.route("/acceptrequest/:requestId")
     .post(acceptParentRequest)
+
+router.route("/requestenrollment")
+    .post([
+        check("courseId").exists().isMongoId(),
+        check("parentId").exists().isMongoId(),
+        check("userId").exists().isMongoId(),
+    ],askForEnrollment)
 
 module.exports=router;

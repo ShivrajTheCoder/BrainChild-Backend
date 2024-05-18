@@ -14,6 +14,10 @@ const testSchema=new Schema({
     topper:{
         type:mongoose.Types.ObjectId,
         ref:"User"
+    },
+    course:{
+        type:mongoose.Types.ObjectId,
+        ref:"Course"
     }
 })
 

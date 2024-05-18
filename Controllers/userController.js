@@ -1,8 +1,11 @@
+const { validationResult } = require("express-validator");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const CourseModel = require("../Models/CourseModel");
+const EnrollmentRequest = require("../Models/EnrollmentRequest");
 const ParentModel = require("../Models/ParentModel");
 const RequestModel = require("../Models/RequestModel");
-const User = require("../Models/User");const { NotFoundError } = require("../Utilities/CustomErrors");
+const User = require("../Models/User");
+const { NotFoundError, CustomError } = require("../Utilities/CustomErrors");
 const exp = module.exports;
 
 exp.getEnrolledCourses = RouterAsyncErrorHandler(async (req, res, next) => {
@@ -106,3 +109,43 @@ exp.acceptParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
         next(error);
     }
 });
+
+
+exp.askForEnrollment=RouterAsyncErrorHandler(async(req,res,next)=>{
+    const {courseId,userId,parentId}=req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    try{
+        const enreq=await EnrollmentRequest.find({courseId,userId,parentId});
+        console.log(enreq);
+        if(enreq.length>0){
+            return res.status(400).json({
+                message:"request already exists",
+            })
+        }
+        const course=await CourseModel.findById(courseId);
+        const user=await User.findById(userId);
+        const parent=await ParentModel.findById(parentId);
+        if(!course || !user || !parentId){
+            throw new NotFoundError("User or Course or Parent not found!");
+        }
+        console.log(parent.child, user._id);
+        if (!parent.child.equals(user._id)) {
+            throw new CustomError(401, "Invalid child");
+        }
+        const newEnreq=new EnrollmentRequest({
+            courseId,userId,parentId
+        });
+        console.log(newEnreq);
+        const savedReq=await newEnreq.save();
+        return res.status(201).json({
+            message:"Course Requested for Parent",
+            request:savedReq
+        })
+    }
+    catch(error){
+        next(error);
+    }
+})
