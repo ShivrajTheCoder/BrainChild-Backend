@@ -4,9 +4,11 @@ const {
   ApproveCourse,
   GetDashboardData,
   AddTeacher,
+  GetApprovalPendingCourses,
+  GetApprovalPendingVideos,
+  ApproveVideo,
 } = require("../Controllers/adminController");
 const { check } = require("express-validator");
-const { CreateNewCourse } = require("../Controllers/teacherController");
 
 router.route("/approvecourse").put(ApproveCourse);
 
@@ -19,7 +21,15 @@ router.route("/addteacher").post([
   check("password").exists().isLength({ min: 6 }), // Assuming a minimum length of 6 for the password
 ], AddTeacher);
 
+router.route("/getapprovalpendingcourses")
+  .get(GetApprovalPendingCourses)
 
+router.route("/getapprovalpendingvideos")
+  .get(GetApprovalPendingVideos)
 
+router.route("/approvevideo/:videoId")
+  .put([
+    check("videoId").exists().isMongoId()
+  ],ApproveVideo)
 
 module.exports = router;
