@@ -8,6 +8,7 @@ const exp = module.exports;
 const Razorpay = require('razorpay');
 const Order = require("../Models/OrderModel");
 const { validationResult } = require("express-validator");
+const CourseModel = require("../Models/CourseModel");
 const razorpayInstance = new Razorpay({
     key_id: process.env.RZ_KEY,
     key_secret: process.env.RZ_SECRET,
@@ -99,7 +100,7 @@ exp.addSuggestion = RouterAsyncErrorHandler(async (req, res, next) => {
 })
 
 exp.orderCourse = RouterAsyncErrorHandler(async (req, res, next) => {
-    const { course,user, amount=500 } = req.body;
+    const { course, user, amount = 500 } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -133,15 +134,16 @@ exp.orderCourse = RouterAsyncErrorHandler(async (req, res, next) => {
         next(error);
     }
 })
-
 exp.paymentSuccess = RouterAsyncErrorHandler(async (req, res, next) => {
     const { razorpayOrderId } = req.params;
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     try {
-        if (!razorpayOrderId ) {
+        if (!razorpayOrderId) {
             return res.status(400).json({ message: 'Missing required parameters' });
         }
 
@@ -151,9 +153,28 @@ exp.paymentSuccess = RouterAsyncErrorHandler(async (req, res, next) => {
         }
 
         order.paymentStatus = true;
-
         await order.save();
-        await EnrollmentReq.findOneAndDelete({courseId:order.course,userId:order.user})
+
+        const user = await User.findById(order.user);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!user.courses.includes(order.course)) {
+            user.courses.push(order.course);
+            await user.save();
+        }
+
+        const course = await CourseModel.findById(order.course);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+
+        course.enrolled += 1;
+        await course.save();
+
+        await EnrollmentReq.findOneAndDelete({ courseId: order.course, userId: order.user });
+
         return res.status(200).json({
             message: 'Payment successful!',
             order: order,
