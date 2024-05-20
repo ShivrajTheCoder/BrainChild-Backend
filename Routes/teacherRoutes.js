@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { check, body, validationResult } = require("express-validator");
 const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
-const { UploadVideo, DeleteVideo, UpdateVideo, GetMyCourses, GetMyVideos } = require("../Controllers/teacherController");
+const { UploadVideo, DeleteVideo, UpdateVideo, GetMyCourses, GetMyVideos, GetTeacherInfo } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
 const multer = require('multer');
 const storage = multer.diskStorage({
@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 });
 // const upload = multer({ dest: 'uploads/' })
 const upload = multer({ storage: storage })
-const multipleUpload = upload.fields([{ name: "thumbnail", maxCount: 1 },{name:"video",maxCount:1}])
+const multipleUpload = upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "video", maxCount: 1 }])
 const atLeastOne = (value, { req }) => {
     if (req.title || req.title) {
         return true;
@@ -31,11 +31,17 @@ router.route("/uploadvideo")
 router.route("/getallteachercourse/:authorId")
     .get([
         check("authorId").exists().isMongoId()
-    ],GetMyCourses)
+    ], GetMyCourses)
 router.route("/getallteachervideos/:authorId")
     .get([
         check("authorId").exists().isMongoId()
-    ],GetMyVideos)
+    ], GetMyVideos)
+
+router.route("/getteacherinfo/:authorId")
+    .get([
+        check("authorId").exists().isMongoId()
+    ], GetTeacherInfo)
+
 
 router.route("/deletevideo/:videoId")
     .delete([

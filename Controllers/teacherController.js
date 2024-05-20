@@ -5,6 +5,7 @@ const Teacher = require("../Models/TeacherModel");
 const Video = require("../Models/VideoModel");
 const fs = require("fs");
 const { NotFoundError, CustomError } = require("../Utilities/CustomErrors");
+const TestModel = require("../Models/Exam/TestModel");
 const exp = module.exports;
 
 exp.UploadVideo = RouterAsyncErrorHandler(async (req, res, next) => {
@@ -137,15 +138,49 @@ exp.GetMyVideos = RouterAsyncErrorHandler(async (req, res, next) => {
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const videos = await Video.find({ author: authorId });
+        const videos = await Video.find({ author: authorId }).populate('course', 'name');
         if (videos.length > 0) {
+            const videosWithCourseNames = videos.map(video => ({
+                ...video.toObject(),
+                course: video.course.name
+            }));
             return res.status(200).json({
-                videos,
+                videos: videosWithCourseNames,
                 message: "Found videos!",
             });
         } else {
             throw new NotFoundError("No videos found!");
         }
+    } catch (error) {
+        next(error);
+    }
+});
+exp.GetTeacherInfo = RouterAsyncErrorHandler(async (req, res, next) => {
+    const { authorId } = req.params;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+        // Get number of courses
+        const coursesCount = await Course.countDocuments({ author: authorId });
+
+        // Get total enrolled students
+        const courses = await Course.find({ author: authorId });
+        const totalEnrolled = courses.reduce((acc, course) => acc + course.enrolled, 0);
+
+        // Get number of videos
+        const videosCount = await Video.countDocuments({ author: authorId });
+
+        
+        const testsCount = await TestModel.countDocuments({ author: authorId });
+        return res.status(200).json({
+            coursesCount,
+            totalEnrolled,
+            videosCount,
+            testsCount,
+            message: "Teacher information retrieved successfully!",
+        });
     } catch (error) {
         next(error);
     }
