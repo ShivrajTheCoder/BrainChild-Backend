@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { check, body, validationResult } = require("express-validator");
 const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
-const { UploadVideo, DeleteVideo, UpdateVideo, GetMyCourses } = require("../Controllers/teacherController");
+const { UploadVideo, DeleteVideo, UpdateVideo, GetMyCourses, GetMyVideos } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
 const multer = require('multer');
 const storage = multer.diskStorage({
@@ -32,6 +32,10 @@ router.route("/getallteachercourse/:authorId")
     .get([
         check("authorId").exists().isMongoId()
     ],GetMyCourses)
+router.route("/getallteachervideos/:authorId")
+    .get([
+        check("authorId").exists().isMongoId()
+    ],GetMyVideos)
 
 router.route("/deletevideo/:videoId")
     .delete([
