@@ -1,6 +1,6 @@
 const express=require("express");
 const router=express.Router();
-const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment } = require("../Controllers/userController");
+const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser } = require("../Controllers/userController");
 const {LoginUser,SignupUser} =require("../Controllers/authController");
 const User = require("../Models/User");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
@@ -36,5 +36,10 @@ router.route("/requestenrollment")
         check("parentId").exists().isMongoId(),
         check("userId").exists().isMongoId(),
     ],askForEnrollment)
+
+router.route("/getuserupcomingtests/:userId")
+    .get([
+        check("userId").exists().isMongoId(),
+    ],getAllTestsForUser)
 
 module.exports=router;

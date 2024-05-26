@@ -6,6 +6,7 @@ const ParentModel = require("../Models/ParentModel");
 const RequestModel = require("../Models/RequestModel");
 const User = require("../Models/User");
 const { NotFoundError, CustomError } = require("../Utilities/CustomErrors");
+const TestModel = require("../Models/Exam/TestModel");
 const exp = module.exports;
 
 exp.getEnrolledCourses = RouterAsyncErrorHandler(async (req, res, next) => {
@@ -51,28 +52,28 @@ exp.subscribeCourse = RouterAsyncErrorHandler(async (req, res, next) => {
 });
 
 
-exp.getAllUsers=RouterAsyncErrorHandler(async(req,res,next)=>{
-    try{
-        const users=await User.find({});
+exp.getAllUsers = RouterAsyncErrorHandler(async (req, res, next) => {
+    try {
+        const users = await User.find({});
         return res.status(200).json({
             users
         })
     }
-    catch(error){
+    catch (error) {
         next(error);
     }
 })// remove it 
 
-exp.getAllParentRequest=RouterAsyncErrorHandler(async (req, res, next) => {
+exp.getAllParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
     const { childId } = req.params;
     try {
         const child = await User.findById(childId);
         if (!child) {
             throw new NotFoundError("User Not found!");
         }
-        const {email}=child;
-        const requests=await RequestModel.find({receiver:email});
-        if(requests.length <1){
+        const { email } = child;
+        const requests = await RequestModel.find({ receiver: email });
+        if (requests.length < 1) {
             throw new NotFoundError("No requests found!");
         }
 
@@ -111,41 +112,76 @@ exp.acceptParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
 });
 
 
-exp.askForEnrollment=RouterAsyncErrorHandler(async(req,res,next)=>{
-    const {courseId,userId,parentId}=req.body;
+exp.askForEnrollment = RouterAsyncErrorHandler(async (req, res, next) => {
+    const { courseId, userId, parentId } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    try{
-        const enreq=await EnrollmentRequest.find({courseId,userId,parentId});
+    try {
+        const enreq = await EnrollmentRequest.find({ courseId, userId, parentId });
         console.log(enreq);
-        if(enreq.length>0){
+        if (enreq.length > 0) {
             return res.status(400).json({
-                message:"request already exists",
+                message: "request already exists",
             })
         }
-        const course=await CourseModel.findById(courseId);
-        const user=await User.findById(userId);
-        const parent=await ParentModel.findById(parentId);
-        if(!course || !user || !parentId){
+        const course = await CourseModel.findById(courseId);
+        const user = await User.findById(userId);
+        const parent = await ParentModel.findById(parentId);
+        if (!course || !user || !parentId) {
             throw new NotFoundError("User or Course or Parent not found!");
         }
         console.log(parent.child, user._id);
         if (!parent.child.equals(user._id)) {
             throw new CustomError(401, "Invalid child");
         }
-        const newEnreq=new EnrollmentRequest({
-            courseId,userId,parentId
+        const newEnreq = new EnrollmentRequest({
+            courseId, userId, parentId
         });
         console.log(newEnreq);
-        const savedReq=await newEnreq.save();
+        const savedReq = await newEnreq.save();
         return res.status(201).json({
-            message:"Course Requested for Parent",
-            request:savedReq
+            message: "Course Requested for Parent",
+            request: savedReq
         })
     }
-    catch(error){
+    catch (error) {
         next(error);
     }
 })
+
+exp.getAllTestsForUser = RouterAsyncErrorHandler(async (req, res, next) => {
+    const { userId } = req.params;
+
+    try {
+        const user = await User.findById(userId).populate({
+            path: 'courses',
+        });
+
+        if (!user) {
+            throw new NotFoundError("User Not found!");
+        }
+
+        const courses = user.courses;
+        let allTests = [];
+
+        for (const course of courses) {
+            const courseTests = await TestModel.find({ course: course._id });
+            if (courseTests.length > 0) {
+                allTests = allTests.concat(courseTests);
+            }
+        }
+
+        if (allTests.length < 1) {
+            throw new NotFoundError("No tests found!");
+        }
+
+        return res.status(200).json({
+            message: "Tests Found!",
+            tests: allTests
+        });
+    } catch (error) {
+        next(error);
+    }
+});

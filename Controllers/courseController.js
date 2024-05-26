@@ -1,6 +1,7 @@
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const Course = require("../Models/CourseModel");
 const TeacherModel = require("../Models/TeacherModel");
+const VideoModel = require("../Models/VideoModel");
 const { CustomError, NotFoundError } = require("../Utilities/CustomErrors");
 const { validationResult } = require("express-validator");
 
@@ -131,6 +132,38 @@ exp.DeleteCourse = RouterAsyncErrorHandler(async (req, res, next) => {
     return res.status(200).json({
       message: "Course Deleted",
       course: deletedCourse,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+exp.GetAllCourseVideos = RouterAsyncErrorHandler(async (req, res, next) => {
+  const courseId = req.params.courseId;
+  try {
+    const course = await Course.findById(courseId).populate("videos");
+    if (!course) {
+      throw new NotFoundError("Course Not Found");
+    }
+    return res.status(200).json({
+      message: "Course Videos Found",
+      videos: course.videos,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// New function to get a video by its ID
+exp.GetVideoById = RouterAsyncErrorHandler(async (req, res, next) => {
+  const videoId = req.params.videoId;
+  try {
+    const video = await VideoModel.findById(videoId);
+    if (!video) {
+      throw new NotFoundError("Video Not Found");
+    }
+    return res.status(200).json({
+      message: "Video Found",
+      video,
     });
   } catch (error) {
     next(error);

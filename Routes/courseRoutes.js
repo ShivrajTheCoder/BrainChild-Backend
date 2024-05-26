@@ -7,6 +7,8 @@ const {
   GetCourseById,
   UpdateCourse,
   DeleteCourse,
+  GetAllCourseVideos,
+  GetVideoById,
 } = require("../Controllers/courseController");
 const { CustomError } = require("../Utilities/CustomErrors");
 const multer = require('multer');
@@ -62,5 +64,13 @@ router.route("/updatecourse/:id").put([
 router.route("/deletecourse/:id").delete([
   check("id").exists().isMongoId(),
 ], DeleteCourse);
+
+router.route("/getcoursevideos/:courseId").get([
+  check("courseId").exists().isMongoId()
+],GetAllCourseVideos)
+
+router.route("/getvideosbyid/:videoId").get([
+  check("videoId").exists().isMongoId()
+],GetVideoById)
 
 module.exports = router;
