@@ -9,17 +9,19 @@ const {
   DeleteCourse,
   GetAllCourseVideos,
   GetVideoById,
+  AddTestToCourse,
+  GetTestById,
 } = require("../Controllers/courseController");
 const { CustomError } = require("../Utilities/CustomErrors");
 const multer = require('multer');
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads') // Uploads folder where files will be stored
-    },
-    filename: function (req, file, cb) {
-        // Use original file name with a timestamp to avoid overwriting files with the same name
-        cb(null, Date.now() + '-' + file.originalname)
-    }
+  destination: function (req, file, cb) {
+    cb(null, 'uploads') // Uploads folder where files will be stored
+  },
+  filename: function (req, file, cb) {
+    // Use original file name with a timestamp to avoid overwriting files with the same name
+    cb(null, Date.now() + '-' + file.originalname)
+  }
 });
 const upload = multer({ storage: storage })
 const multipleUpload = upload.fields([{ name: "thumbnail", maxCount: 1 }])
@@ -67,10 +69,32 @@ router.route("/deletecourse/:id").delete([
 
 router.route("/getcoursevideos/:courseId").get([
   check("courseId").exists().isMongoId()
-],GetAllCourseVideos)
+], GetAllCourseVideos)
 
 router.route("/getvideosbyid/:videoId").get([
   check("videoId").exists().isMongoId()
-],GetVideoById)
+], GetVideoById)
+
+
+router.route("/addtest")
+  .post([
+    check("courseId").exists().isMongoId().withMessage("Invalid course ID"),
+    check("testName").exists().isString().withMessage("Test name is required and should be a string"),
+    check("startDate").exists().isISO8601().withMessage("Invalid start date"),
+    check("duration").exists().isNumeric().withMessage("Duration is required and should be a number"),
+    check("questions").isArray().withMessage("Questions should be an array"),
+    check("questions.*.marks").exists().isNumeric().withMessage("Marks for each question is required and should be a number"),
+    check("questions.*.description").exists().isString().withMessage("Description for each question is required and should be a string"),
+    check("questions.*.options").isArray().withMessage("Options for each question should be an array"),
+    check("questions.*.options.*.choice").exists().isString().withMessage("Each option should have a choice that is a string"),
+    check("questions.*.correct.choice").exists().isString().withMessage("Each question should have a correct choice that is a string"),
+  ], 
+    AddTestToCourse);
+
+router.route("/gettestbyid/:testId")
+  .get([
+    check("testId").exists().isMongoId()
+  ],GetTestById)
+
 
 module.exports = router;

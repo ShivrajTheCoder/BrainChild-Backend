@@ -1,5 +1,7 @@
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const Course = require("../Models/CourseModel");
+const QuestionModel = require("../Models/Exam/QuestionModel");
+const TestModel = require("../Models/Exam/TestModel");
 const TeacherModel = require("../Models/TeacherModel");
 const VideoModel = require("../Models/VideoModel");
 const { CustomError, NotFoundError } = require("../Utilities/CustomErrors");
@@ -24,11 +26,11 @@ exp.CreateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
       return res.status(400).json({ error: "All fields are required" });
     }
     const thumbnailpath = "http://localhost:8080/media/" + thumbnail[0].filename;
-    const coursef=await Course.find({name})
+    const coursef = await Course.find({ name })
     console.log(coursef);
-    if(coursef.length>0){
+    if (coursef.length > 0) {
       return res.status(400).json({
-        message:"Course already exists"
+        message: "Course already exists"
       })
     }
     const teacher = await TeacherModel.findById(author);
@@ -40,7 +42,7 @@ exp.CreateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
       name,
       description,
       author,
-      thumbnail:thumbnailpath
+      thumbnail: thumbnailpath
     });
     // console.log(newCourse)
     const course = await newCourse.save();
@@ -164,6 +166,69 @@ exp.GetVideoById = RouterAsyncErrorHandler(async (req, res, next) => {
     return res.status(200).json({
       message: "Video Found",
       video,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+exp.AddTestToCourse = RouterAsyncErrorHandler(async (req, res, next) => {
+  const { courseId, testName, startDate, duration, questions,topics } = req.body;
+  console.log(topics);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const course = await Course.findById(courseId);
+  if (!course) {
+    return res.status(404).json({ message: "Course not found" });
+  }
+
+  // Calculate maximum marks
+  let maximumMarks = 0;
+  for (const question of questions) {
+    maximumMarks += question.marks; // Assuming each question has a 'marks' field
+  }
+
+  // Create questions
+  const createdQuestions = await Promise.all(questions.map(async (questionData) => {
+    console.log(questionData);
+    const question = new QuestionModel(questionData);
+    await question.save();
+    return question._id;
+  }));
+
+  // Create test
+  const newTest = new TestModel({
+    course: courseId,
+    testName,
+    startDate,
+    duration,
+    topics,
+    questions: createdQuestions,
+    maximumMarks: maximumMarks // Assign the calculated maximum marks
+  });
+
+  await newTest.save();
+
+  return res.status(201).json({
+    message: "Test created successfully",
+    test: newTest
+  });
+});
+
+
+exp.GetTestById = RouterAsyncErrorHandler(async (req, res, next) => {
+  const testId = req.params.testId;
+  try {
+    const test = await TestModel.findById(testId).populate("questions");
+    if (!test) {
+      throw new NotFoundError("Test Not Found");
+    }
+    return res.status(200).json({
+      message: "Test Found",
+      test,
     });
   } catch (error) {
     next(error);

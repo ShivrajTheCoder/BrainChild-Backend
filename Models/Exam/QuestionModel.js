@@ -1,13 +1,5 @@
 const mongoose=require("mongoose");
 const Schema=mongoose.Schema;
-const choiceOptionSchema=new Schema(
-    {
-        choice:{
-            type:String,
-            required:true
-        }
-    }
-)
 const questionSchema=new Schema({
     marks:{
         type:Number,
@@ -17,8 +9,19 @@ const questionSchema=new Schema({
         type:String,
         required:true,
     },
-    options:[choiceOptionSchema],
-    correct:choiceOptionSchema,
+    correct:{
+        type:String,
+        required:true
+    },
+    topic:{
+        type:String,
+        required:true,
+    },
+    options:[
+        {
+            type:String,
+        }
+    ]
 })
 
 

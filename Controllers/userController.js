@@ -168,6 +168,7 @@ exp.getAllTestsForUser = RouterAsyncErrorHandler(async (req, res, next) => {
 
         for (const course of courses) {
             const courseTests = await TestModel.find({ course: course._id });
+            console.log(courseTests)
             if (courseTests.length > 0) {
                 allTests = allTests.concat(courseTests);
             }
