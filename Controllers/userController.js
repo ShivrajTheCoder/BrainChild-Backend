@@ -7,6 +7,9 @@ const RequestModel = require("../Models/RequestModel");
 const User = require("../Models/User");
 const { NotFoundError, CustomError } = require("../Utilities/CustomErrors");
 const TestModel = require("../Models/Exam/TestModel");
+const QuestionModel = require("../Models/Exam/QuestionModel");
+const { TestResponse } = require("../Models/Exam/TestResponseModel");
+const TestResponseModel = require("../Models/Exam/TestResponseModel");
 const exp = module.exports;
 
 exp.getEnrolledCourses = RouterAsyncErrorHandler(async (req, res, next) => {
@@ -181,6 +184,58 @@ exp.getAllTestsForUser = RouterAsyncErrorHandler(async (req, res, next) => {
         return res.status(200).json({
             message: "Tests Found!",
             tests: allTests
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+const optionMap = {
+    "A": 0,
+    "B": 1,
+    "C": 2,
+    "D": 3
+};
+exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { userId, testId, testResponse } = req.body;
+
+    try {
+        let totalMarks = 0;
+
+        for (const response of testResponse) {
+            const question = await QuestionModel.findById(response.questionId);
+
+            if (!question) {
+                return res.status(400).json({ error: `Question with ID ${response.questionId} not found` });
+            }
+            // console.log(question);
+            // Convert correct answer from letter to index
+            const correctIndex = optionMap[question.correct];
+
+            if (response.optionIndex === correctIndex) {
+                totalMarks += question.marks;
+            }
+        }
+
+        // Save the test response to the database
+        const newTestResponse = new TestResponseModel({
+            userId,
+            testId,
+            responses: testResponse.map(r => ({
+                question: r.questionId,
+                option: r.optionIndex
+            })),
+            totalMarks
+        });
+
+        await newTestResponse.save();
+        // console.log(newTestResponse);
+        return res.status(201).json({
+            message: "Response Submitted",
+            totalMarks
         });
     } catch (error) {
         next(error);

@@ -1,18 +1,18 @@
-const express=require("express");
-const router=express.Router();
-const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser } = require("../Controllers/userController");
-const {LoginUser,SignupUser} =require("../Controllers/authController");
+const express = require("express");
+const router = express.Router();
+const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser, submitResponse } = require("../Controllers/userController");
+const { LoginUser, SignupUser } = require("../Controllers/authController");
 const User = require("../Models/User");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const { check, body, validationResult } = require("express-validator");
 
 router.route("/login")
-    .post(RouterAsyncErrorHandler(async(req,res,next)=>{
-        LoginUser(req,res,next);
+    .post(RouterAsyncErrorHandler(async (req, res, next) => {
+        LoginUser(req, res, next);
     }))
 router.route("/signup")
-    .post(RouterAsyncErrorHandler(async(req,res,next)=>{
-        SignupUser(req,res,next);
+    .post(RouterAsyncErrorHandler(async (req, res, next) => {
+        SignupUser(req, res, next);
     }))
 
 router.route("/getenrolled/:childId")
@@ -35,11 +35,20 @@ router.route("/requestenrollment")
         check("courseId").exists().isMongoId(),
         check("parentId").exists().isMongoId(),
         check("userId").exists().isMongoId(),
-    ],askForEnrollment)
+    ], askForEnrollment)
 
 router.route("/getuserupcomingtests/:userId")
     .get([
         check("userId").exists().isMongoId(),
-    ],getAllTestsForUser)
+    ], getAllTestsForUser)
 
-module.exports=router;
+router.route("/submitresponse")
+    .post([
+        check("userId").exists().isMongoId(),
+        check("testId").exists().isMongoId(),
+        check("testResponse").exists().isArray().withMessage("testResponse must be an array"),
+        check("testResponse.*.questionId").exists().isMongoId().withMessage("Each response must have a valid question ID"),
+        check("testResponse.*.optionIndex").exists().isNumeric().notEmpty().withMessage("Each response must have a non-empty option")
+    ],submitResponse)
+
+module.exports = router;
