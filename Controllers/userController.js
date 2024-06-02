@@ -10,6 +10,7 @@ const TestModel = require("../Models/Exam/TestModel");
 const QuestionModel = require("../Models/Exam/QuestionModel");
 const { TestResponse } = require("../Models/Exam/TestResponseModel");
 const TestResponseModel = require("../Models/Exam/TestResponseModel");
+const resultAnalyser = require("../Utilities/ResultAnalyser");
 const exp = module.exports;
 
 exp.getEnrolledCourses = RouterAsyncErrorHandler(async (req, res, next) => {
@@ -200,6 +201,7 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     const { userId, testId, testResponse } = req.body;
 
     try {
@@ -211,8 +213,7 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
             if (!question) {
                 return res.status(400).json({ error: `Question with ID ${response.questionId} not found` });
             }
-            // console.log(question);
-            // Convert correct answer from letter to index
+
             const correctIndex = optionMap[question.correct];
 
             if (response.optionIndex === correctIndex) {
@@ -220,7 +221,6 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
             }
         }
 
-        // Save the test response to the database
         const newTestResponse = new TestResponseModel({
             userId,
             testId,
@@ -231,11 +231,27 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
             totalMarks
         });
 
-        await newTestResponse.save();
-        // console.log(newTestResponse);
+        const savedResponse = await newTestResponse.save();
+
+        const analysisResult = await resultAnalyser(savedResponse);
+        if(analysisResult?.error){
+            throw new CustomError(500,"Analysis gone wrong but saved!");
+        }
+        if (analysisResult) {
+            // Add topic results to the saved response
+            savedResponse.topicResults = analysisResult.result.map(r => ({
+                topic_name: r.topic_name,
+                result: r.result
+            }));
+
+            // Save the updated response
+            await savedResponse.save();
+        }
+
         return res.status(201).json({
             message: "Response Submitted",
-            totalMarks
+            totalMarks,
+            analysisResult
         });
     } catch (error) {
         next(error);
