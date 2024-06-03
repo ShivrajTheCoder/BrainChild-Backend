@@ -183,3 +183,32 @@ exp.paymentSuccess = RouterAsyncErrorHandler(async (req, res, next) => {
         next(error);
     }
 });
+
+exp.childWatchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { childId } = req.params;
+
+    try {
+        const child = await User.findById(childId).populate('watchedVideos');
+
+        if (!child) {
+            throw new NotFoundError("Child not found!");
+        }
+
+        return res.status(200).json({
+            message: "Here are the videos watched",
+            videos: child.watchedVideos,
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// exp.childTestReports=RouterAsyncErrorHandler(asycn(req,res,next)=>{
+
+// })

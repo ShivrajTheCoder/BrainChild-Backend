@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser, submitResponse } = require("../Controllers/userController");
+const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser, submitResponse, watchedVideo } = require("../Controllers/userController");
 const { LoginUser, SignupUser } = require("../Controllers/authController");
 const User = require("../Models/User");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
@@ -49,6 +49,12 @@ router.route("/submitresponse")
         check("testResponse").exists().isArray().withMessage("testResponse must be an array"),
         check("testResponse.*.questionId").exists().isMongoId().withMessage("Each response must have a valid question ID"),
         check("testResponse.*.optionIndex").exists().isNumeric().notEmpty().withMessage("Each response must have a non-empty option")
-    ],submitResponse)
+    ], submitResponse)
+
+router.route("/watchedvideo")
+    .post([
+        check("userId").exists().isMongoId(),
+        check("videoId").exists().isMongoId(),
+    ], watchedVideo);
 
 module.exports = router;

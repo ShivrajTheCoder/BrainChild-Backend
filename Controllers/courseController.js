@@ -146,9 +146,14 @@ exp.GetAllCourseVideos = RouterAsyncErrorHandler(async (req, res, next) => {
     if (!course) {
       throw new NotFoundError("Course Not Found");
     }
+    const videos=await VideoModel.find({course:courseId,approved:true});
+    if(videos.length<1){
+      throw new NotFoundError("Videos Not found!");
+    }
+
     return res.status(200).json({
       message: "Course Videos Found",
-      videos: course.videos,
+      videos: videos,
     });
   } catch (error) {
     next(error);

@@ -11,6 +11,7 @@ const QuestionModel = require("../Models/Exam/QuestionModel");
 const { TestResponse } = require("../Models/Exam/TestResponseModel");
 const TestResponseModel = require("../Models/Exam/TestResponseModel");
 const resultAnalyser = require("../Utilities/ResultAnalyser");
+const VideoModel = require("../Models/VideoModel");
 const exp = module.exports;
 
 exp.getEnrolledCourses = RouterAsyncErrorHandler(async (req, res, next) => {
@@ -253,6 +254,36 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
             totalMarks,
             analysisResult
         });
+    } catch (error) {
+        next(error);
+    }
+});
+exp.watchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, videoId } = req.body;
+
+    try {
+        const video = await VideoModel.findById(videoId);
+        if (!video) {
+            throw new NotFoundError("Video not found!");
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new NotFoundError("User not found!");
+        }
+
+        // Add videoId to watchedVideos array if it's not already present
+        if (!user.watchedVideos.includes(videoId)) {
+            user.watchedVideos.push(videoId);
+            await user.save();
+        }
+
+        res.status(200).json({ message: "Video added to watched list." });
     } catch (error) {
         next(error);
     }
