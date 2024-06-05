@@ -1,24 +1,35 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const testTakenSchema=new Schema({
-    test:{
-        type:mongoose.Types.ObjectId,
-        ref:"Test",
+const onlineTimeSchema = new Schema({
+    date: {
+        type: Date,
+        required: true
     },
-    maximumMarks:{
-        type:Number,
-        required:true
-    },
-    scored:{
-        type:Number,
-        required:true
-    },
-    course:{
-        type:mongoose.Types.ObjectId,
-        ref:"Course",
+    timeInSeconds: {
+        type: Number,
+        required: true
     }
-})
+});
+
+const testTakenSchema = new Schema({
+    test: {
+        type: mongoose.Types.ObjectId,
+        ref: "Test",
+    },
+    maximumMarks: {
+        type: Number,
+        required: true
+    },
+    scored: {
+        type: Number,
+        required: true
+    },
+    course: {
+        type: mongoose.Types.ObjectId,
+        ref: "Course",
+    }
+});
 
 const userSchema = new Schema({
     username: {
@@ -33,7 +44,7 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true,
-        minLenght: 5
+        minLength: 5
     },
     courses: [
         {
@@ -51,8 +62,8 @@ const userSchema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: "Parent"
     },
-    tests:[testTakenSchema]
-})
-
+    tests: [testTakenSchema],
+    onlineTime: [onlineTimeSchema]
+});
 
 module.exports = mongoose.model("User", userSchema);

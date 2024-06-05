@@ -235,8 +235,8 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
         const savedResponse = await newTestResponse.save();
 
         const analysisResult = await resultAnalyser(savedResponse);
-        if(analysisResult?.error){
-            throw new CustomError(500,"Analysis gone wrong but saved!");
+        if (analysisResult?.error) {
+            throw new CustomError(500, "Analysis gone wrong but saved!");
         }
         if (analysisResult) {
             // Add topic results to the saved response
@@ -288,3 +288,74 @@ exp.watchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
         next(error);
     }
 });
+exp.updateUserTime = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { userId, date, time } = req.body;
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const onlineTimeEntry = user.onlineTime.find(entry =>
+            entry.date.toISOString().split('T')[0] === new Date(date).toISOString().split('T')[0]
+        );
+
+        if (onlineTimeEntry) {
+            onlineTimeEntry.timeInSeconds += time;
+        } else {
+            user.onlineTime.push({ date: new Date(date), timeInSeconds: time });
+        }
+        await user.save();
+
+        res.status(200).json({ message: "User time updated successfully", user });
+    } catch (error) {
+        next(error);
+    }
+});
+
+exp.getUserTime = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    
+    const { userId } = req.params;
+
+    try {
+        // Find the user by userId
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const onlineTimeData = user.onlineTime;
+        const currentDate = new Date();
+        const past30Days = [];
+
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(currentDate - (i * 24 * 60 * 60 * 1000));
+            const dateString = date.toISOString().split('T')[0];
+            const entry = onlineTimeData.find(entry => 
+                entry.date.toISOString().split('T')[0] === dateString
+            );
+            past30Days.push({
+                date: dateString,
+                timeInMinutes: entry ? entry.timeInSeconds / 60 : 0
+            });
+        }
+
+        past30Days.reverse(); 
+
+        res.status(200).json({
+            timeline:past30Days,
+            message:"timeline found!"
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+module.exports = exp;

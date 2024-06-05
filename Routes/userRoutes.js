@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser, submitResponse, watchedVideo } = require("../Controllers/userController");
+const { getEnrolledCourses, getAllUsers, subscribeCourse, getAllParentRequest, acceptParentRequest, askForEnrollment, getAllTestsForUser, submitResponse, watchedVideo, updateUserTime, getUserTime } = require("../Controllers/userController");
 const { LoginUser, SignupUser } = require("../Controllers/authController");
 const User = require("../Models/User");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
@@ -56,5 +56,18 @@ router.route("/watchedvideo")
         check("userId").exists().isMongoId(),
         check("videoId").exists().isMongoId(),
     ], watchedVideo);
+
+router.route("/addtime")
+    .post([
+        check("userId").exists().isMongoId(),
+        check("date").exists().isDate(),
+        check("time").exists().isNumeric(),
+    ],updateUserTime)
+
+router.route("/getusertime/:userId")
+    .get([
+        check("userId").exists().isMongoId()
+    ],getUserTime)
+
 
 module.exports = router;
