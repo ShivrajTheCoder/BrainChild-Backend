@@ -8,7 +8,6 @@ const User = require("../Models/User");
 const { NotFoundError, CustomError } = require("../Utilities/CustomErrors");
 const TestModel = require("../Models/Exam/TestModel");
 const QuestionModel = require("../Models/Exam/QuestionModel");
-const { TestResponse } = require("../Models/Exam/TestResponseModel");
 const TestResponseModel = require("../Models/Exam/TestResponseModel");
 const resultAnalyser = require("../Utilities/ResultAnalyser");
 const VideoModel = require("../Models/VideoModel");
@@ -173,7 +172,7 @@ exp.getAllTestsForUser = RouterAsyncErrorHandler(async (req, res, next) => {
 
         for (const course of courses) {
             const courseTests = await TestModel.find({ course: course._id });
-            console.log(courseTests)
+            // console.log(courseTests)
             if (courseTests.length > 0) {
                 allTests = allTests.concat(courseTests);
             }
@@ -207,6 +206,7 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
 
     try {
         let totalMarks = 0;
+        let scoredMarks = 0; // New variable to track scored marks
 
         for (const response of testResponse) {
             const question = await QuestionModel.findById(response.questionId);
@@ -219,6 +219,7 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
 
             if (response.optionIndex === correctIndex) {
                 totalMarks += question.marks;
+                scoredMarks += question.marks; // Increment scored marks if the answer is correct
             }
         }
 
@@ -229,7 +230,8 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
                 question: r.questionId,
                 option: r.optionIndex
             })),
-            totalMarks
+            totalMarks,
+            scored: scoredMarks // Assign scored marks to the scored field
         });
 
         const savedResponse = await newTestResponse.save();
@@ -252,12 +254,14 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
         return res.status(201).json({
             message: "Response Submitted",
             totalMarks,
+            scoredMarks, // Include scored marks in the response
             analysisResult
         });
     } catch (error) {
         next(error);
     }
 });
+
 exp.watchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -357,5 +361,32 @@ exp.getUserTime = RouterAsyncErrorHandler(async (req, res, next) => {
         next(error);
     }
 });
+
+exp.getTestReports = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    
+    try {
+        const { userId } = req.params;
+
+        // Find test responses for the given userId
+        const testReports = await TestResponseModel.find({ userId })
+            .populate('testId') 
+            .populate('responses.question') 
+            .populate('topicResults') 
+            .exec();
+
+        if (!testReports) {
+            return res.status(404).json({ error: "Test reports not found" });
+        }
+
+        res.status(200).json(testReports);
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 module.exports = exp;

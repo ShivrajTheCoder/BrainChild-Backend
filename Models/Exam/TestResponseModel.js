@@ -39,6 +39,10 @@ const testResponseSchema = new Schema({
         type: Number,
         default: 0
     },
+    scored:{
+        type:Number,
+        default:0,
+    },
     topicResults: [resultSchema]
 });
 
