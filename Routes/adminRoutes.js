@@ -7,6 +7,7 @@ const {
   GetApprovalPendingCourses,
   GetApprovalPendingVideos,
   ApproveVideo,
+  getAllSuggestions,
 } = require("../Controllers/adminController");
 const { check } = require("express-validator");
 
@@ -31,5 +32,8 @@ router.route("/approvevideo/:videoId")
   .put([
     check("videoId").exists().isMongoId()
   ],ApproveVideo)
+
+router.route("/getallsuggestions")
+  .get(getAllSuggestions)
 
 module.exports = router;

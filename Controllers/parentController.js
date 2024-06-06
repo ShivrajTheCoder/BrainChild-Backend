@@ -9,6 +9,7 @@ const Razorpay = require('razorpay');
 const Order = require("../Models/OrderModel");
 const { validationResult } = require("express-validator");
 const CourseModel = require("../Models/CourseModel");
+const SuggestionModel = require("../Models/SuggestionModel");
 const razorpayInstance = new Razorpay({
     key_id: process.env.RZ_KEY,
     key_secret: process.env.RZ_SECRET,
@@ -194,7 +195,13 @@ exp.childWatchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const { childId } = req.params;
 
     try {
-        const child = await User.findById(childId).populate('watchedVideos');
+        const child = await User.findById(childId).populate({
+            path: 'watchedVideos',
+            populate: [
+                { path: 'course', select: 'name' },
+                { path: 'author',select:"email" },
+            ]
+        });
 
         if (!child) {
             throw new NotFoundError("Child not found!");
@@ -209,6 +216,25 @@ exp.childWatchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     }
 });
 
-// exp.childTestReports=RouterAsyncErrorHandler(asycn(req,res,next)=>{
+exp.addSuggestion = RouterAsyncErrorHandler(async (req, res, next) => {
+    const errors = validationResult(req);
 
-// })
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { description, author } = req.body;
+
+    try {
+        const suggestion = await SuggestionModel.create({ description, author });
+        if (!suggestion) {
+            throw new Error("Failed to create suggestion");
+        }
+        return res.status(201).json({
+            message: "Suggestion created successfully",
+            data: suggestion
+        });
+    } catch (error) {
+        next(error);
+    }
+});

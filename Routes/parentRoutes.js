@@ -1,5 +1,5 @@
 const express=require("express");
-const { getAllChildCourses, sendParentRequest, getCourseRequests, orderCourse, paymentSuccess, childWatchedVideo } = require("../Controllers/parentController");
+const { getAllChildCourses, sendParentRequest, getCourseRequests, orderCourse, paymentSuccess, childWatchedVideo, addSuggestion } = require("../Controllers/parentController");
 const { SignupParent, LoginParent } = require("../Controllers/authController");
 const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const { check, body } = require("express-validator");
@@ -39,5 +39,11 @@ router.route("/childwatched/:childId")
     .get([
         check("childId").exists().isMongoId(),
     ],childWatchedVideo);
+
+router.route("/addsuggestion")
+    .post([
+        check("author").exists().isMongoId(),
+        check("description").exists()
+    ],addSuggestion)
 
 module.exports=router;

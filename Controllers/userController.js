@@ -206,7 +206,7 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
 
     try {
         let totalMarks = 0;
-        let scoredMarks = 0; // New variable to track scored marks
+        let scoredMarks = 0;
 
         for (const response of testResponse) {
             const question = await QuestionModel.findById(response.questionId);
@@ -216,10 +216,14 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
             }
 
             const correctIndex = optionMap[question.correct];
+            const maxMarks = question.marks;
+
+            // Increment total marks by the maximum marks for each question
+            totalMarks += maxMarks;
 
             if (response.optionIndex === correctIndex) {
-                totalMarks += question.marks;
-                scoredMarks += question.marks; // Increment scored marks if the answer is correct
+                // Increment scored marks by the maximum marks if the answer is correct
+                scoredMarks += maxMarks;
             }
         }
 
@@ -231,7 +235,7 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
                 option: r.optionIndex
             })),
             totalMarks,
-            scored: scoredMarks // Assign scored marks to the scored field
+            scored: scoredMarks
         });
 
         const savedResponse = await newTestResponse.save();
@@ -241,26 +245,25 @@ exp.submitResponse = RouterAsyncErrorHandler(async (req, res, next) => {
             throw new CustomError(500, "Analysis gone wrong but saved!");
         }
         if (analysisResult) {
-            // Add topic results to the saved response
             savedResponse.topicResults = analysisResult.result.map(r => ({
                 topic_name: r.topic_name,
                 result: r.result
             }));
 
-            // Save the updated response
             await savedResponse.save();
         }
 
         return res.status(201).json({
             message: "Response Submitted",
             totalMarks,
-            scoredMarks, // Include scored marks in the response
+            scoredMarks,
             analysisResult
         });
     } catch (error) {
         next(error);
     }
 });
+
 
 exp.watchedVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     const errors = validationResult(req);

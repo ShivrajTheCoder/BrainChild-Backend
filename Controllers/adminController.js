@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const { NotFoundError } = require("../Utilities/CustomErrors");
 const VideoModel = require("../Models/VideoModel");
 const { validationResult } = require("express-validator");
+const SuggestionModel = require("../Models/SuggestionModel");
 
 const exp = module.exports;
 
@@ -127,3 +128,16 @@ exp.ApproveVideo = RouterAsyncErrorHandler(async (req, res, next) => {
     next(error);
   }
 });
+
+
+exp.getAllSuggestions = async (req, res, next) => {
+  try {
+      const suggestions = await SuggestionModel.find().populate('author').sort({ timestamp: -1 }).exec();
+      if (!suggestions) {
+          return res.status(404).json({ message: "No suggestions found" });
+      }
+      return res.status(200).json({ message: "Suggestions found successfully", data: suggestions });
+  } catch (error) {
+      next(error);
+  }
+};
