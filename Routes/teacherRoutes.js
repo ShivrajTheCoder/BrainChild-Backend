@@ -5,6 +5,8 @@ const routeCredentialValidator = require("../Middlewares/CredentialsValidator");
 const { UploadVideo, DeleteVideo, UpdateVideo, GetMyCourses, GetMyVideos, GetTeacherInfo } = require("../Controllers/teacherController");
 const { CustomError } = require("../Utilities/CustomErrors");
 const multer = require('multer');
+const { LoginTeacher, SignupTeacher } = require("../Controllers/authController");
+const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads') // Uploads folder where files will be stored
@@ -24,7 +26,14 @@ const atLeastOne = (value, { req }) => {
 
     throw new CustomError(400, "Invalid parameters", "Invalid")
 }
-
+router.route("/login")
+    .post(RouterAsyncErrorHandler(async (req, res, next) => {
+        LoginTeacher(req, res, next);
+    }))
+router.route("/signup")
+    .post(RouterAsyncErrorHandler(async (req, res, next) => {
+        SignupTeacher(req, res, next);
+    }))
 router.route("/uploadvideo")
     .post(multipleUpload, UploadVideo)
 

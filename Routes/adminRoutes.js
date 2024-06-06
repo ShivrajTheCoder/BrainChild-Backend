@@ -10,6 +10,14 @@ const {
   getAllSuggestions,
 } = require("../Controllers/adminController");
 const { check } = require("express-validator");
+const { LoginAdmin } = require("../Controllers/authController");
+const { RouterAsyncErrorHandler } = require("../Middlewares/ErrorHandlerMiddleware");
+
+
+router.route("/login")
+    .post(RouterAsyncErrorHandler(async (req, res, next) => {
+        LoginAdmin(req, res, next);
+    }))
 
 router.route("/approvecourse").put(ApproveCourse);
 
