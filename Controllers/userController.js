@@ -76,7 +76,7 @@ exp.getAllParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
             throw new NotFoundError("User Not found!");
         }
         const { email } = child;
-        const requests = await RequestModel.find({ receiver: email });
+        const requests = await RequestModel.find({ receiver: email }).populate("sender");
         if (requests.length < 1) {
             throw new NotFoundError("No requests found!");
         }
@@ -98,15 +98,16 @@ exp.acceptParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
             throw new NotFoundError("No requests found!");
         }
         const { sender, receiver } = request;
-        const child = await User.findOne({ email: sender }); // Use findOne instead of find
-        const parent = await ParentModel.findOne({ email: receiver }); // Use findOne instead of find
+        const child = await User.findOne({ email: receiver }); 
+        const parent = await ParentModel.findOne({ email: sender }); 
+        // console.log(child,parent);
         if (!child || !parent) {
             throw new NotFoundError("Child or Parent no longer exists");
         }
         child.parent = parent._id;
         parent.child = child._id;
-        await child.save(); // Use save on the retrieved document
-        await parent.save(); // Use save on the retrieved document
+        await child.save(); 
+        await parent.save(); 
         return res.status(200).json({
             message: "Request accepted",
         });

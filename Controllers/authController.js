@@ -38,7 +38,7 @@ async function authenticateUser(UserModel, req, res, next) {
     return res.status(200).json({
       message: "Signed In",
       token,
-      userId: user._id,
+      user
     });
   } catch (error) {
     next(error);

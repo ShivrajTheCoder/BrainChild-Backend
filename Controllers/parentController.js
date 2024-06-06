@@ -16,6 +16,7 @@ const razorpayInstance = new Razorpay({
 });
 exp.sendParentRequest = RouterAsyncErrorHandler(async (req, res, next) => {
     const { parentEmail, childEmail } = req.body;
+    console.log(req.body);
     try {
         const child = await User.findOne({ email: childEmail });
         const parent = await ParentModel.findOne({ email: parentEmail });
