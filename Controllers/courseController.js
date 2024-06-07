@@ -58,7 +58,7 @@ exp.CreateCourse = RouterAsyncErrorHandler(async (req, res, next) => {
 
 exp.GetAllCourses = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
-    const courses = await Course.find();
+    const courses = await Course.find({approved:true});
     if (courses.length > 0) {
       return res.status(200).json({
         message: "Courses found",

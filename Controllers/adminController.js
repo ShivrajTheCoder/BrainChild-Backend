@@ -81,7 +81,7 @@ exp.AddTeacher = RouterAsyncErrorHandler(async (req, res, next) => {
 
 exp.GetApprovalPendingCourses = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
-    const pendingApprovalCourses = await CourseModel.find({ approved: false });
+    const pendingApprovalCourses = await CourseModel.find({ approved: false }).populate("author");
     return res.status(200).json({
       pendingApprovalCourses: pendingApprovalCourses.length,
       courses: pendingApprovalCourses,
@@ -95,8 +95,8 @@ exp.GetApprovalPendingCourses = RouterAsyncErrorHandler(async (req, res, next) =
 exp.GetApprovalPendingVideos = RouterAsyncErrorHandler(async (req, res, next) => {
   try {
     const pendingApprovalVideos = await VideoModel.find({ approved: false })
-      .populate('author', 'username')
-      .populate('course', 'name');
+      .populate('author')
+      .populate('course');
       
     return res.status(200).json({
       pendingApprovalVideos: pendingApprovalVideos.length,
