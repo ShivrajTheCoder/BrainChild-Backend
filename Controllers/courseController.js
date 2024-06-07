@@ -178,7 +178,7 @@ exp.GetVideoById = RouterAsyncErrorHandler(async (req, res, next) => {
 });
 
 exp.AddTestToCourse = RouterAsyncErrorHandler(async (req, res, next) => {
-  const { courseId, testName, startDate, duration, questions,topics } = req.body;
+  const { courseId, testName, startDate, duration, questions, topics } = req.body;
   console.log(topics);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -193,7 +193,7 @@ exp.AddTestToCourse = RouterAsyncErrorHandler(async (req, res, next) => {
   // Calculate maximum marks
   let maximumMarks = 0;
   for (const question of questions) {
-    maximumMarks += question.marks; // Assuming each question has a 'marks' field
+    maximumMarks += Number(question.marks); // Ensure 'marks' is treated as a number
   }
 
   // Create questions

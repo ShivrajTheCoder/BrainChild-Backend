@@ -161,10 +161,13 @@ exp.paymentSuccess = RouterAsyncErrorHandler(async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
+        console.log(user.courses);
         if (!user.courses.includes(order.course)) {
             user.courses.push(order.course);
             await user.save();
+
+            // Log the user document after saving
+            console.log('User document after adding course:', user);
         }
 
         const course = await CourseModel.findById(order.course);
